@@ -15,18 +15,7 @@ from notionify.notion_helper import NotionHelper
 from utils import truncate_string, is_within_n_days
 
 
-debug = os.getenv('DEBUG', 'false').lower() == 'true'
-if debug:
-    logging.basicConfig(level=logging.DEBUG)
 
-else:
-    # 禁用所有第三方库的日志
-    logging.basicConfig(level=logging.INFO)
-    # logging.getLogger('notion_client').setLevel(logging.ERROR)  # 提高到 ERROR 级别
-    # logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)  # 提高到 ERROR 级别
-    # logging.getLogger('urllib3').setLevel(logging.ERROR)  # 禁用 urllib3 日志
-    # logging.getLogger('requests').setLevel(logging.ERROR)  # 禁用 requests 日志
-    # logging.getLogger('httpx').setLevel(logging.ERROR)  # 禁用 httpx 日志
 
 # 配置日志格式
 logging.basicConfig(
@@ -37,6 +26,19 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger('flomo2notion')
+
+debug = os.getenv('DEBUG', 'false').lower() == 'true'
+if debug:
+    logging.basicConfig(level=logging.DEBUG)
+
+else:
+    # 禁用所有第三方库的日志
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger('notion_client').setLevel(logging.ERROR)  # 提高到 ERROR 级别
+    logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)  # 提高到 ERROR 级别
+    logging.getLogger('urllib3').setLevel(logging.ERROR)  # 禁用 urllib3 日志
+    logging.getLogger('requests').setLevel(logging.ERROR)  # 禁用 requests 日志
+    logging.getLogger('httpx').setLevel(logging.ERROR)  # 禁用 httpx 日志
 
 def split_long_text(text, max_length=1900):
     """
