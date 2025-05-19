@@ -19,10 +19,9 @@ debug = os.getenv('DEBUG', 'false').lower() == 'true'
 if debug:
     logging.basicConfig(level=logging.DEBUG)
 
-
 else:
     # 禁用所有第三方库的日志
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig(level=logging.INFO)
     # logging.getLogger('notion_client').setLevel(logging.ERROR)  # 提高到 ERROR 级别
     # logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)  # 提高到 ERROR 级别
     # logging.getLogger('urllib3').setLevel(logging.ERROR)  # 禁用 urllib3 日志
