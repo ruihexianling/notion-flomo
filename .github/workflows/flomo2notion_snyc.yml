@@ -2,6 +2,11 @@ name: flomo2notion sync
 
 on:
   workflow_dispatch:       # ✅ 手动触发
+    inputs:
+      debug:
+        description: '开启调试模式'
+        required: false
+        default: 'false'
   schedule:                # ✅ 定时触发（每1小时）
     - cron: "* 0/1 * * *"
   push:                    # ✅ 每次 push 到 main 分支
@@ -21,6 +26,7 @@ jobs:
       FLOMO_TOKEN: ${{ secrets.FLOMO_TOKEN }}
       REF: ${{ github.ref }}
       REPOSITORY: ${{ github.repository }}
+      DEBUG: ${{ github.event.inputs.debug || (github.ref == 'refs/heads/debug-branch') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -34,5 +40,10 @@ jobs:
           pip install -r requirements.txt
       - name: flomo2notion sync
         run: |
+          if [ "$DEBUG" = "true" ]; then
+              echo "开启调试模式，打印详细日志"
+            else
+              echo "正常模式，简洁日志"
+            fi
           python -u flomo2notion.py
       
