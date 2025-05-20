@@ -116,12 +116,15 @@ class Flomo2Notion:
             self.skip_count += 1
             return
         
+        # 记录结构日志
+        logger.info(f"记录结构: content 是否为 None: {memo['content'] is None}, 是否有图片: {bool(memo.get('files'))}, 图片数量: {len(memo.get('files', []))}")
+        
         # 处理 None 内容
         if memo['content'] is None:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
-                logger.debug(f"📷 发现 {len(memo['files'])} 个图片文件")
+                logger.info(f"📷 发现 {len(memo['files'])} 个图片文件")
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
                         try:
@@ -130,7 +133,7 @@ class Flomo2Notion:
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
                             logger.debug(f"📷 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
-                            logger.debug(f"🔗 图片URL: {clean_url}...")
+                            logger.debug(f"🔗 图片URL: {clean_url}")
                             
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
@@ -146,6 +149,24 @@ class Flomo2Notion:
             content_md = markdownify(memo['content'])
             content_text = html2text.html2text(memo['content'])
             logger.debug(f"📝 内容长度: {len(content_md)} 字符")
+            
+            # 检查是否同时有图片，如果有，添加到内容后面
+            if memo.get('files') and len(memo['files']) > 0:
+                logger.info(f"📷 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
+                content_md += "\n\n# 附带图片\n\n"
+                for i, file in enumerate(memo['files']):
+                    if file.get('url'):
+                        try:
+                            clean_url = clean_backticks(file['url'])
+                            clean_name = clean_backticks(file.get('name', '图片'))
+                            
+                            logger.debug(f"📷 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.debug(f"🔗 混合内容图片URL: {clean_url}")
+                            
+                            content_md += f"![{clean_name}]({clean_url})\n\n"
+                            logger.debug(f"✅ 混合内容图片 {i+1} Markdown 链接已添加")
+                        except Exception as e:
+                            logger.error(f"❌ 混合内容图片处理失败: {str(e)}", exc_info=True)
         
         parent = {"database_id": self.notion_helper.page_id, "type": "database_id"}
         properties = {
@@ -187,14 +208,14 @@ class Flomo2Notion:
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    logger.debug(f"📤 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")  # 添加内容预览
+                    logger.info(f"📤 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")
                     try:
                         self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
                         logger.debug(f"✅ 内容块 {i+1} 上传成功")
                     except Exception as e:
                         logger.error(f"❌ 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                logger.debug(f"📤 上传完整内容预览: {content_md[:100]}...")  # 添加内容预览
+                logger.info(f"📤 上传完整内容预览: {content_md[:100]}...")
                 try:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
                     logger.debug("✅ 内容上传成功")
@@ -226,12 +247,15 @@ class Flomo2Notion:
                 self.error_count += 1
                 raise
         
+        # 记录结构日志
+        logger.info(f"更新记录结构: content 是否为 None: {memo['content'] is None}, 是否有图片: {bool(memo.get('files'))}, 图片数量: {len(memo.get('files', []))}")
+        
         # 处理 None 内容
         if memo['content'] is None:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
-                logger.debug(f"📷 更新: 发现 {len(memo['files'])} 个图片文件")
+                logger.info(f"📷 更新: 发现 {len(memo['files'])} 个图片文件")
                 
                 # 只添加 Markdown 链接
                 for i, file in enumerate(memo['files']):
@@ -241,12 +265,12 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
-                            logger.debug(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
-                            logger.debug(f"🔗 更新: 图片URL: {clean_url}...")
+                            logger.info(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.info(f"🔗 更新: 图片URL: {clean_url}")
                             
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.debug(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
+                            logger.info(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
                         except Exception as e:
                             logger.error(f"❌ 更新: 图片处理失败: {str(e)}", exc_info=True)
             else:
@@ -258,6 +282,24 @@ class Flomo2Notion:
             content_md = markdownify(memo['content'])
             content_text = html2text.html2text(memo['content'])
             logger.debug(f"📝 更新: 内容长度: {len(content_md)} 字符")
+            
+            # 检查是否同时有图片，如果有，添加到内容后面
+            if memo.get('files') and len(memo['files']) > 0:
+                logger.info(f"📷 更新: 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
+                content_md += "\n\n# 附带图片\n\n"
+                for i, file in enumerate(memo['files']):
+                    if file.get('url'):
+                        try:
+                            clean_url = clean_backticks(file['url'])
+                            clean_name = clean_backticks(file.get('name', '图片'))
+                            
+                            logger.info(f"📷 更新: 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.info(f"🔗 更新: 混合内容图片URL: {clean_url}")
+                            
+                            content_md += f"![{clean_name}]({clean_url})\n\n"
+                            logger.info(f"✅ 更新: 混合内容图片 {i+1} Markdown 链接已添加")
+                        except Exception as e:
+                            logger.error(f"❌ 更新: 混合内容图片处理失败: {str(e)}", exc_info=True)
         
         # 只更新内容
         properties = {
@@ -290,14 +332,14 @@ class Flomo2Notion:
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    logger.debug(f"📤 更新: 上传内容块 {i+1}/{len(content_chunks)}")
+                    logger.info(f"📤 更新: 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")
                     try:
                         self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
                         logger.debug(f"✅ 更新: 内容块 {i+1} 上传成功")
                     except Exception as e:
                         logger.error(f"❌ 更新: 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                logger.debug("📤 更新: 上传完整内容")
+                logger.info(f"📤 更新: 上传完整内容预览: {content_md[:100]}...")
                 try:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
                     logger.debug("✅ 更新: 内容上传成功")
