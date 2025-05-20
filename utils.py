@@ -86,7 +86,7 @@ def truncate_string(s, length=30):
     return s[:end_pos]
 
 
-def is_within_n_days(date_str, n_hours):
+def is_within_n_hours(date_str, n_hours):
     """
     判断给定日期是否在当前日期的n小时内
     

@@ -13,7 +13,7 @@ from notionify import notion_utils
 from notionify.md2notion import Md2NotionUploader
 from notionify.notion_cover_list import cover
 from notionify.notion_helper import NotionHelper
-from utils import truncate_string, is_within_n_days
+from utils import truncate_string, is_within_n_hours
 
 # 配置日志格式
 logging.basicConfig(
@@ -490,8 +490,22 @@ class Flomo2Notion:
                 # 获取更新间隔（小时）
                 interval_hour = int(os.getenv("UPDATE_INTERVAL_HOUR", 2))  # 默认2小时
                 
+                # 获取在更新时间范围内的记录的最早和最新时间
+                if memo_list:
+                    # 筛选出在时间范围内的记录
+                    updated_memos = [memo for memo in memo_list if is_within_n_hours(memo['updated_at'], interval_hour)]
+                    
+                    if updated_memos:
+                        earliest_memo = min(updated_memos, key=lambda x: x['updated_at'])
+                        latest_memo = max(updated_memos, key=lambda x: x['updated_at'])
+                        time_range = f"更新时间范围（{interval_hour}小时内）: {earliest_memo['updated_at']} 至 {latest_memo['updated_at']}"
+                    else:
+                        time_range = f"没有 {interval_hour} 小时内更新的记录"
+                else:
+                    time_range = "没有需要更新的记录"
+                
                 # 检查是否需要更新
-                if not full_update and not is_within_n_days(memo['updated_at'], interval_hour):
+                if not full_update and not is_within_n_hours(memo['updated_at'], interval_hour):
                     self.skip_count += 1
                     logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_hour} 小时")
                     continue
@@ -526,14 +540,7 @@ class Flomo2Notion:
         # 获取北京时间
         beijing_time = time.localtime(time.time() + 8 * 3600) if time.localtime().tm_gmtoff != 8 * 3600 else time.localtime()
         
-        # 获取最早和最新的更新时间
-        if memo_list:
-            earliest_memo = min(memo_list, key=lambda x: x['updated_at'])
-            latest_memo = max(memo_list, key=lambda x: x['updated_at'])
-            time_range = f"更新时间范围: {earliest_memo['updated_at']} 至 {latest_memo['updated_at']}"
-        else:
-            time_range = "没有需要更新的记录"
-            
+        
         notification_message = f"""
 <b>Flomo 到 Notion 同步完成</b>
 
