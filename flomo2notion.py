@@ -14,9 +14,6 @@ from notionify.notion_cover_list import cover
 from notionify.notion_helper import NotionHelper
 from utils import truncate_string, is_within_n_days
 
-
-
-
 # 配置日志格式
 logging.basicConfig(
     level=logging.INFO,
@@ -27,13 +24,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger('flomo2notion')
 
+# 设置调试模式
 debug = os.getenv('DEBUG', 'false').lower() == 'true'
 if debug:
-    logging.basicConfig(level=logging.DEBUG)
-
+    logger.setLevel(logging.DEBUG)
+    logger.debug("🔍 调试模式已启用")
 else:
     # 禁用所有第三方库的日志
-    logging.basicConfig(level=logging.INFO)
     logging.getLogger('notion_client').setLevel(logging.ERROR)  # 提高到 ERROR 级别
     logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)  # 提高到 ERROR 级别
     logging.getLogger('urllib3').setLevel(logging.ERROR)  # 禁用 urllib3 日志
@@ -124,6 +121,7 @@ class Flomo2Notion:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
+                logger.debug(f"📷 发现 {len(memo['files'])} 个图片文件")
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
                         try:
@@ -131,16 +129,23 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
+                            logger.debug(f"📷 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.debug(f"🔗 图片URL: {clean_url[:30]}...")
+                            
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
+                            logger.debug(f"✅ 图片 {i+1} Markdown 链接已添加")
                         except Exception as e:
-                            logger.error(f"❌ 图片处理失败: {str(e)}")
+                            logger.error(f"❌ 图片处理失败: {str(e)}", exc_info=True)
             else:
                 content_md = ""  # 如果没有文件则为空内容
+                logger.debug("📝 没有图片文件，内容为空")
             content_text = content_md
         else:
+            logger.debug("📝 处理HTML内容转换为Markdown")
             content_md = markdownify(memo['content'])
             content_text = html2text.html2text(memo['content'])
+            logger.debug(f"📝 内容长度: {len(content_md)} 字符")
         
         parent = {"database_id": self.notion_helper.page_id, "type": "database_id"}
         properties = {
@@ -162,28 +167,44 @@ class Flomo2Notion:
         }
     
         random_cover = random.choice(cover)
+        logger.debug(f"🖼️ 选择封面: {random_cover}")
     
         try:
+            logger.debug("📤 开始创建Notion页面")
             page = self.notion_helper.client.pages.create(
                 parent=parent,
                 icon=notion_utils.get_icon("https://www.notion.so/icons/target_red.svg"),
                 cover=notion_utils.get_icon(random_cover),
                 properties=properties,
             )
+            logger.debug(f"✅ Notion页面创建成功，ID: {page['id']}")
             
             # 检查内容长度，如果超过限制则分割
             if len(content_md) > 2000:
+                logger.debug(f"📏 内容超过2000字符，需要分割")
                 content_chunks = split_long_text(content_md)
+                logger.debug(f"📏 内容已分割为 {len(content_chunks)} 块")
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
+                    logger.debug(f"📤 上传内容块 {i+1}/{len(content_chunks)}")
+                    try:
+                        self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
+                        logger.debug(f"✅ 内容块 {i+1} 上传成功")
+                    except Exception as e:
+                        logger.error(f"❌ 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
+                logger.debug("📤 上传完整内容")
+                try:
+                    self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
+                    logger.debug("✅ 内容上传成功")
+                except Exception as e:
+                    logger.error(f"❌ 内容上传失败: {str(e)}", exc_info=True)
             
             self.success_count += 1
+            logger.debug("✅ 记录插入完成")
         except Exception as e:
-            logger.error(f"❌ 记录插入失败: {str(e)}")
+            logger.error(f"❌ 记录插入失败: {str(e)}", exc_info=True)
             self.error_count += 1
             raise
 
@@ -191,6 +212,7 @@ class Flomo2Notion:
         # 检查记录是否已删除
         if memo.get('deleted_at') is not None:
             try:
+                logger.debug(f"🗑️ 归档已删除的记录: {memo['slug']}")
                 # 将 Notion 页面归档（相当于删除）
                 self.notion_helper.client.pages.update(
                     page_id=page_id,
@@ -200,7 +222,7 @@ class Flomo2Notion:
                 logger.info(f"✅ 归档记录成功: {memo['slug']}")
                 return
             except Exception as e:
-                logger.error(f"❌ 归档记录失败: {str(e)}")
+                logger.error(f"❌ 归档记录失败: {str(e)}", exc_info=True)
                 self.error_count += 1
                 raise
         
@@ -209,6 +231,7 @@ class Flomo2Notion:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
+                logger.debug(f"📷 更新: 发现 {len(memo['files'])} 个图片文件")
                 
                 # 只添加 Markdown 链接
                 for i, file in enumerate(memo['files']):
@@ -218,16 +241,23 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
+                            logger.debug(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.debug(f"🔗 更新: 图片URL: {clean_url[:30]}...")
+                            
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
+                            logger.debug(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
                         except Exception as e:
-                            logger.error(f"❌ 图片处理失败: {str(e)}")
+                            logger.error(f"❌ 更新: 图片处理失败: {str(e)}", exc_info=True)
             else:
                 content_md = ""  # 如果没有文件则为空内容
+                logger.debug("📝 更新: 没有图片文件，内容为空")
             content_text = content_md
         else:
+            logger.debug("📝 更新: 处理HTML内容转换为Markdown")
             content_md = markdownify(memo['content'])
             content_text = html2text.html2text(memo['content'])
+            logger.debug(f"📝 更新: 内容长度: {len(content_md)} 字符")
         
         # 只更新内容
         properties = {
@@ -243,24 +273,41 @@ class Flomo2Notion:
         }
         
         try:
+            logger.debug(f"📤 更新: 开始更新Notion页面属性，ID: {page_id}")
             page = self.notion_helper.client.pages.update(page_id=page_id, properties=properties)
+            logger.debug("✅ 更新: Notion页面属性更新成功")
         
             # 先清空page的内容，再重新写入
+            logger.debug(f"🗑️ 更新: 清空页面内容，ID: {page['id']}")
             self.notion_helper.clear_page_content(page["id"])
+            logger.debug("✅ 更新: 页面内容清空成功")
         
             # 检查内容长度，如果超过限制则分割
             if len(content_md) > 2000:
+                logger.debug(f"📏 更新: 内容超过2000字符，需要分割")
                 content_chunks = split_long_text(content_md)
+                logger.debug(f"📏 更新: 内容已分割为 {len(content_chunks)} 块")
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
+                    logger.debug(f"📤 更新: 上传内容块 {i+1}/{len(content_chunks)}")
+                    try:
+                        self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
+                        logger.debug(f"✅ 更新: 内容块 {i+1} 上传成功")
+                    except Exception as e:
+                        logger.error(f"❌ 更新: 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
+                logger.debug("📤 更新: 上传完整内容")
+                try:
+                    self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
+                    logger.debug("✅ 更新: 内容上传成功")
+                except Exception as e:
+                    logger.error(f"❌ 更新: 内容上传失败: {str(e)}", exc_info=True)
                 
             self.success_count += 1
+            logger.debug("✅ 更新: 记录更新完成")
         except Exception as e:
-            logger.error(f"❌ 记录更新失败: {str(e)}")
+            logger.error(f"❌ 记录更新失败: {str(e)}", exc_info=True)
             self.error_count += 1
             raise
 
