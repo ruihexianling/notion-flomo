@@ -1,0 +1,19 @@
+# render.yaml
+services:
+  - type: cron
+    name: flomo2notion-sync
+    env: python
+    schedule: "0 0/1 * * *"       # 每小时执行一次
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python flomo2notion.py"
+    envVars:
+      - key: NOTION_TOKEN
+        sync: true
+      - key: NOTION_PAGE
+        sync: true
+      - key: FLOMO_TOKEN
+        sync: true
+      - key: TELEGRAM_CHAT_ID
+        sync: true
+      - key: TELEGRAM_BOT_TOKEN
+        sync: true

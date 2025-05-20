@@ -426,11 +426,17 @@ class Flomo2Notion:
         # 获取北京时间
         beijing_time = time.localtime(time.time() + 8 * 3600) if time.localtime().tm_gmtoff != 8 * 3600 else time.localtime()
         
+        # 获取触发者和触发类型信息
+        triggered_by = os.getenv("TRIGGERED_BY", "未知用户")
+        trigger_type = os.getenv("TRIGGER_TYPE", "未知触发类型")
+
         notification_message = """
 <b>开始同步 Flomo 到 Notion</b>
 
 ⏰ 开始时间: {}
-""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time))
+👤 触发者: {}
+🔔 触发类型: {}
+""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type)
         send_telegram_notification(notification_message)
         
         # 1. 调用flomo web端的api从flomo获取数据
@@ -498,7 +504,7 @@ class Flomo2Notion:
                     if updated_memos:
                         earliest_memo = min(updated_memos, key=lambda x: x['updated_at'])
                         latest_memo = max(updated_memos, key=lambda x: x['updated_at'])
-                        time_range = f"更新时间范围（{interval_hour}小时内）: {earliest_memo['updated_at']} 至 {latest_memo['updated_at']}"
+                        time_range = f"更新时间范围({interval_hour}小时内): {earliest_memo['updated_at']} 至 {latest_memo['updated_at']}"
                     else:
                         time_range = f"没有 {interval_hour} 小时内更新的记录"
                 else:
