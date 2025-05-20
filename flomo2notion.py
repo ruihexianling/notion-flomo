@@ -102,6 +102,44 @@ def mask_sensitive_info(text, mask_length=4):
     # 保留前几个字符，其余用*代替
     return text[:mask_length] + '*' * (len(text) - mask_length)
 
+def send_telegram_notification(message):
+    """
+    发送 Telegram 通知
+    
+    Args:
+        message (str): 要发送的消息内容
+    """
+    try:
+        # 从环境变量获取 Telegram Bot Token 和 Chat ID
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        
+        # 如果未设置 Telegram 相关环境变量，则跳过通知
+        if not bot_token or not chat_id:
+            logger.warning("⚠️ 未设置 Telegram 相关环境变量，跳过通知")
+            return
+            
+        # 构建 API URL
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # 构建请求数据
+        data = {
+            "chat_id": chat_id,
+            "text": message,
+            "parse_mode": "HTML"  # 支持 HTML 格式
+        }
+        
+        # 发送请求
+        response = requests.post(url, data=data)
+        
+        # 检查响应
+        if response.status_code == 200:
+            logger.info("✅ Telegram 通知发送成功")
+        else:
+            logger.error(f"❌ Telegram 通知发送失败: {response.text}")
+    except Exception as e:
+        logger.error(f"❌ Telegram 通知发送异常: {str(e)}", exc_info=True)
+
 class Flomo2Notion:
     def __init__(self):
         self.flomo_api = FlomoApi()
@@ -468,6 +506,21 @@ class Flomo2Notion:
         logger.info(f"  - 失败记录: {self.error_count}")
         logger.info(f"  - 耗时: {duration:.2f} 秒")
         logger.info("✅ 同步完成")
+        
+        # 发送 Telegram 通知
+        notification_message = f"""
+<b>Flomo 到 Notion 同步完成</b>
+
+📊 <b>同步统计:</b>
+  - 总记录数: {total}
+  - 成功处理: {self.success_count}
+  - 跳过记录: {self.skip_count}
+  - 失败记录: {self.error_count}
+  - 耗时: {duration:.2f} 秒
+
+✅ 同步完成于 {time.strftime('%Y-%m-%d %H:%M:%S')}
+"""
+        send_telegram_notification(notification_message)
 
 
 if __name__ == "__main__":
