@@ -422,6 +422,17 @@ class Flomo2Notion:
         logger.info("🚀 开始同步 Flomo 到 Notion")
         start_time = time.time()
         
+        # 发送开始同步的通知
+        # 获取北京时间
+        beijing_time = time.localtime(time.time() + 8 * 3600) if time.localtime().tm_gmtoff != 8 * 3600 else time.localtime()
+        
+        notification_message = """
+<b>开始同步 Flomo 到 Notion</b>
+
+⏰ 开始时间: {}
+""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time))
+        send_telegram_notification(notification_message)
+        
         # 1. 调用flomo web端的api从flomo获取数据
         authorization = os.getenv("FLOMO_TOKEN")
         if not authorization:
