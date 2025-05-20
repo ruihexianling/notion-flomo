@@ -142,10 +142,10 @@ class Flomo2Notion:
                             logger.error(f"❌ 图片处理失败: {str(e)}", exc_info=True)
             else:
                 content_md = ""  # 如果没有文件则为空内容
-                logger.debug("📝 没有图片文件，内容为空")
+                logger.info("📝 没有图片文件，内容为空")
             content_text = content_md
         else:
-            logger.debug("📝 处理HTML内容转换为Markdown")
+            logger.info("📝 处理HTML内容转换为Markdown")
             content_md = markdownify(memo['content'])
             content_text = html2text.html2text(memo['content'])
             logger.debug(f"📝 内容长度: {len(content_md)} 字符")
@@ -189,10 +189,10 @@ class Flomo2Notion:
         }
     
         random_cover = random.choice(cover)
-        logger.debug(f"🖼️ 选择封面: {random_cover}")
+        logger.info(f"🖼️ 选择封面: {random_cover}")
     
         try:
-            logger.debug("📤 开始创建Notion页面")
+            logger.info("📤 开始创建Notion页面")
             page = self.notion_helper.client.pages.create(
                 parent=parent,
                 icon=notion_utils.get_icon("https://www.notion.so/icons/target_red.svg"),
@@ -244,7 +244,7 @@ class Flomo2Notion:
                         logger.error(f"❌ 图片块 {i+1} 添加失败: {str(e)}", exc_info=True)
             
             self.success_count += 1
-            logger.debug("✅ 记录插入完成")
+            logger.info("✅ 记录插入完成")
         except Exception as e:
             logger.error(f"❌ 记录插入失败: {str(e)}", exc_info=True)
             self.error_count += 1
@@ -254,7 +254,8 @@ class Flomo2Notion:
         # 检查记录是否已删除
         if memo.get('deleted_at') is not None:
             try:
-                logger.debug(f"🗑️ 归档已删除的记录: {memo['slug']}")
+                logger.info(f"🗑️ 删除已删除的记录")
+                logger.debug(f"{memo['slug']}")
                 # 将 Notion 页面归档（相当于删除）
                 self.notion_helper.client.pages.update(
                     page_id=page_id,
@@ -340,12 +341,12 @@ class Flomo2Notion:
         try:
             logger.debug(f"📤 更新: 开始更新Notion页面属性，ID: {page_id}")
             page = self.notion_helper.client.pages.update(page_id=page_id, properties=properties)
-            logger.debug("✅ 更新: Notion页面属性更新成功")
+            logger.info("✅ 更新: Notion页面属性更新成功")
         
             # 先清空page的内容，再重新写入
             logger.debug(f"🗑️ 更新: 清空页面内容，ID: {page['id']}")
             self.notion_helper.clear_page_content(page["id"])
-            logger.debug("✅ 更新: 页面内容清空成功")
+            logger.info("✅ 更新: 页面内容清空成功")
         
             # 检查内容长度，如果超过限制则分割
             if len(content_md) > 2000:
@@ -365,12 +366,12 @@ class Flomo2Notion:
                 logger.debug(f"📤 更新: 上传完整内容预览: {content_md[:100]}...")
                 try:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
-                    logger.debug("✅ 更新: 内容上传成功")
+                    logger.info("✅ 更新: 内容上传成功")
                 except Exception as e:
                     logger.error(f"❌ 更新: 内容上传失败: {str(e)}", exc_info=True)
                 
             self.success_count += 1
-            logger.debug("✅ 更新: 记录更新完成")
+            logger.info("✅ 更新: 记录更新完成")
         except Exception as e:
             logger.error(f"❌ 记录更新失败: {str(e)}", exc_info=True)
             self.error_count += 1
@@ -398,7 +399,7 @@ class Flomo2Notion:
                     break
                 memo_list.extend(new_memo_list)
                 latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))))
-                logger.info(f"📥 已获取 {len(memo_list)} 条记录")
+                logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
             except Exception as e:
                 logger.error(f"❌ 获取 Flomo 数据失败: {str(e)}")
                 return
@@ -412,7 +413,7 @@ class Flomo2Notion:
         logger.info(f"📥 共有 {len(memo_list)} 条记录，其中 {len(deleted_memo_slugs)} 条已删除")
         
         # 2. 调用notion api获取数据库存在的记录，用slug标识唯一，如果存在则更新，不存在则写入
-        logger.debug("🔍 查询 Notion 数据库...")
+        logger.info("🔍 查询 Notion 数据库...")
         try:
             notion_memo_list = self.notion_helper.query_all(self.notion_helper.page_id)
             slug_map = {}
@@ -425,7 +426,7 @@ class Flomo2Notion:
 
         # 3. 轮询flomo的列表数据
         total = len(memo_list)
-        logger.debug(f"🔄 开始处理 {total} 条 Flomo 记录")
+        logger.info(f"🔄 开始处理 {total} 条 Flomo 记录")
         
         for i, memo in enumerate(memo_list):
             progress = f"[{i+1}/{total}]"
@@ -437,35 +438,35 @@ class Flomo2Notion:
                 full_update = os.getenv("FULL_UPDATE", False)
                 interval_day = os.getenv("UPDATE_INTERVAL_DAY", 1)
                 if not full_update and not is_within_n_days(memo['updated_at'], interval_day):
-                    logger.debug(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_day} 天")
+                    logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_day} 天")
                     self.skip_count += 1
                     continue
 
                 try:
                     page_id = slug_map[memo['slug']]
-                    logger.debug(f"{progress} 🔄 更新记录")
+                    logger.info(f"{progress} 🔄 更新记录")
                     self.update_memo(memo, page_id)
-                    logger.debug(f"{progress} ✅ 更新成功")
+                    logger.info(f"{progress} ✅ 更新成功")
                 except Exception as e:
                     logger.error(f"{progress} ❌ 更新失败: {str(e)}")
             else:
                 try:
-                    logger.debug(f"{progress} 📝 新记录")
+                    logger.info(f"{progress} 📝 新记录")
                     self.insert_memo(memo)
-                    logger.debug(f"{progress} ✅ 插入成功")
+                    logger.info(f"{progress} ✅ 插入成功")
                 except Exception as e:
                     logger.error(f"{progress} ❌ 插入失败: {str(e)}")
         
         end_time = time.time()
         duration = end_time - start_time
         
-        logger.debug("📊 同步统计:")
-        logger.debug(f"  - 总记录数: {total}")
-        logger.debug(f"  - 成功处理: {self.success_count}")
-        logger.debug(f"  - 跳过记录: {self.skip_count}")
-        logger.debug(f"  - 失败记录: {self.error_count}")
-        logger.debug(f"  - 耗时: {duration:.2f} 秒")
-        logger.debug("✅ 同步完成")
+        logger.info("📊 同步统计:")
+        logger.info(f"  - 总记录数: {total}")
+        logger.info(f"  - 成功处理: {self.success_count}")
+        logger.info(f"  - 跳过记录: {self.skip_count}")
+        logger.info(f"  - 失败记录: {self.error_count}")
+        logger.info(f"  - 耗时: {duration:.2f} 秒")
+        logger.info("✅ 同步完成")
 
 
 if __name__ == "__main__":
