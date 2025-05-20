@@ -86,16 +86,16 @@ def truncate_string(s, length=30):
     return s[:end_pos]
 
 
-def is_within_n_days(date_str, n_days):
+def is_within_n_days(date_str, n_hours):
     """
-    判断给定日期是否在当前日期的n天内
+    判断给定日期是否在当前日期的n小时内
     
     Args:
         date_str (str): 日期字符串，格式为 "YYYY-MM-DD HH:MM:SS"，东八区时间
-        n_days (int): 天数
+        n_hours (int): 小时数
         
     Returns:
-        bool: 如果在n天内，返回True，否则返回False
+        bool: 如果在n小时内，返回True，否则返回False
     """    
     
     # 解析日期字符串（假设是东八区时间）
@@ -112,4 +112,4 @@ def is_within_n_days(date_str, n_days):
     delta = now - date
     
     # 判断是否在n天内（转换为秒进行比较）
-    return delta.total_seconds() <= n_days * 24 * 3600
+    return delta.total_seconds() <= n_hours * 3600

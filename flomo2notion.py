@@ -476,10 +476,13 @@ class Flomo2Notion:
             if memo['slug'] in slug_map.keys():
                 # 是否全量更新，默认否
                 full_update = os.getenv("FULL_UPDATE", False)
-                interval_day = os.getenv("UPDATE_INTERVAL_DAY", 1)
-                if not full_update and not is_within_n_days(memo['updated_at'], interval_day):
-                    logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_day} 天")
+                # 获取更新间隔（小时）
+                interval_hour = int(os.getenv("UPDATE_INTERVAL_HOUR", 2))  # 默认2小时
+                
+                # 检查是否需要更新
+                if not full_update and not is_within_n_days(memo['updated_at'], interval_hour):
                     self.skip_count += 1
+                    logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {UPDATE_INTERVAL_HOUR} 小时")
                     continue
 
                 try:
