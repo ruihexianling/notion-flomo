@@ -33,6 +33,10 @@ jobs:
       ACTOR: ${{ github.actor }}
       EVENT_NAME: ${{ github.event_name }}
       WORKFLOW: ${{ github.workflow }}
+      BRANCH: ${{ github.ref }}
+      SHA: ${{ github.sha }}
+      RUN_NUMBER: ${{ github.run_number }}
+      RUN_ID: ${{ github.run_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

@@ -445,7 +445,7 @@ class Flomo2Notion:
 🌳 分支: {}
 📊 工作流: {}
 🔢 运行ID: {}
-""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type, trigger_repo, trigger_branch, trigger_workflow, trigger_run_id)
+""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type, trigger_repo, trigger_branch, trigger_workflow, trigger_run_id, trigger_run_number)
         send_telegram_notification(notification_message)
         
         # 1. 调用flomo web端的api从flomo获取数据
