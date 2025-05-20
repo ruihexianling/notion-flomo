@@ -493,7 +493,7 @@ class Flomo2Notion:
                 # 检查是否需要更新
                 if not full_update and not is_within_n_days(memo['updated_at'], interval_hour):
                     self.skip_count += 1
-                    logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {UPDATE_INTERVAL_HOUR} 小时")
+                    logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_hour} 小时")
                     continue
 
                 try:
