@@ -302,6 +302,7 @@ class Flomo2Notion:
                             logger.error(f"❌ 更新: 混合内容图片处理失败: {str(e)}", exc_info=True)
         
         # 只更新内容
+        logger.debug(f"上传 Memo，标题为：{truncate_string(content_text)}")
         properties = {
             "标题": notion_utils.get_title(
                 truncate_string(content_text)
