@@ -120,7 +120,6 @@ class Flomo2Notion:
             return
         
         # 处理 None 内容
-        image_blocks = []
         if memo['content'] is None:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
@@ -132,18 +131,7 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
-                            # 添加图片块
-                            image_blocks.append({
-                                "type": "image",
-                                "image": {
-                                    "type": "external",
-                                    "external": {
-                                        "url": clean_url
-                                    }
-                                }
-                            })
-                            
-                            # 同时保留在 Markdown 中
+                            # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
                         except Exception as e:
                             logger.error(f"❌ 图片处理失败: {str(e)}")
@@ -192,16 +180,6 @@ class Flomo2Notion:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
             else:
                 self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
-                
-            # 在上传完内容后添加图片块
-            if image_blocks and len(image_blocks) > 0:
-                try:
-                    self.notion_helper.client.blocks.children.append(
-                        block_id=page['id'],
-                        children=image_blocks
-                    )
-                except Exception as e:
-                    logger.error(f"❌ 添加图片块失败: {str(e)}")
             
             self.success_count += 1
         except Exception as e:
@@ -227,13 +205,12 @@ class Flomo2Notion:
                 raise
         
         # 处理 None 内容
-        image_blocks = []
         if memo['content'] is None:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
                 
-                # 创建图片块列表
+                # 只添加 Markdown 链接
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
                         try:
@@ -241,18 +218,7 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
-                            # 添加图片块
-                            image_blocks.append({
-                                "type": "image",
-                                "image": {
-                                    "type": "external",
-                                    "external": {
-                                        "url": clean_url
-                                    }
-                                }
-                            })
-                            
-                            # 同时保留在 Markdown 中，以防块创建失败
+                            # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
                         except Exception as e:
                             logger.error(f"❌ 图片处理失败: {str(e)}")
@@ -291,16 +257,6 @@ class Flomo2Notion:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
             else:
                 self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
-                
-            # 在上传完内容后添加图片块
-            if image_blocks and len(image_blocks) > 0:
-                try:
-                    self.notion_helper.client.blocks.children.append(
-                        block_id=page['id'],
-                        children=image_blocks
-                    )
-                except Exception as e:
-                    logger.error(f"❌ 添加图片块失败: {str(e)}")
                 
             self.success_count += 1
         except Exception as e:
@@ -352,7 +308,7 @@ class Flomo2Notion:
             slug_map = {}
             for notion_memo in notion_memo_list:
                 slug_map[notion_utils.get_rich_text_from_result(notion_memo, "slug")] = notion_memo.get("id")
-            # logger.info(f"🔍 Notion 数据库中已有 {len(slug_map)} 条记录")
+            logger.info(f"🔍 Notion 数据库中已有 {len(slug_map)} 条记录")
         except Exception as e:
             logger.error(f"❌ 查询 Notion 数据库失败: {str(e)}")
             return
@@ -363,7 +319,7 @@ class Flomo2Notion:
         
         for i, memo in enumerate(memo_list):
             progress = f"[{i+1}/{total}]"
-            # logger.info(f"{progress} 🔍 处理记录 - {memo['slug']}")
+            logger.info(f"{progress} 🔍 处理记录 - {memo['slug']}")
             # 3.1 判断memo的slug是否存在，不存在则写入
             # 3.2 防止大批量更新，只更新更新时间为制定时间的数据（默认为1天）
             if memo['slug'] in slug_map.keys():
