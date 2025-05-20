@@ -141,6 +141,14 @@ def send_telegram_notification(message):
     except Exception as e:
         logger.error(f"❌ Telegram 通知发送异常: {str(e)}", exc_info=True)
 
+def is_valid_url(url):
+    """检查URL是否有效"""
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
 class Flomo2Notion:
     def __init__(self):
         self.flomo_api = FlomoApi()
@@ -175,9 +183,13 @@ class Flomo2Notion:
                             logger.debug(f"📷 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
                             logger.debug(f"🔗 图片URL: {clean_url}")
                             
-                            # 只添加 Markdown 链接，不创建图片块
-                            content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.debug(f"✅ 图片 {i+1} Markdown 链接已添加")
+                            # 检查URL是否有效
+                            if is_valid_url(clean_url):
+                                content_md += f"![{clean_name}]({clean_url})\n\n"
+                                logger.debug(f"✅ 图片 {i+1} Markdown 链接已添加")
+                            else:
+                                content_md += f"{clean_name}: {clean_url}\n\n"
+                                logger.debug(f"⚠️ 图片 {i+1} 链接无效，作为文本添加")
                         except Exception as e:
                             logger.error(f"❌ 图片处理失败: {str(e)}", exc_info=True)
             else:
@@ -203,9 +215,13 @@ class Flomo2Notion:
                             logger.debug(f"📷 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
                             logger.debug(f"🔗 混合内容图片URL: {clean_url}")
                             
-                            # 保存图片信息，不添加到Markdown内容中
-                            image_files.append({"url": clean_url, "name": clean_name})
-                            logger.debug(f"✅ 混合内容图片 {i+1} 信息已保存")
+                            # 检查URL是否有效
+                            if is_valid_url(clean_url):
+                                content_md += f"![{clean_name}]({clean_url})\n\n"
+                                logger.debug(f"✅ 混合内容图片 {i+1} Markdown 链接已添加")
+                            else:
+                                content_md += f"{clean_name}: {clean_url}\n\n"
+                                logger.debug(f"⚠️ 混合内容图片 {i+1} 链接无效，作为文本添加")
                         except Exception as e:
                             logger.error(f"❌ 混合内容图片处理失败: {str(e)}", exc_info=True)
         
@@ -330,9 +346,13 @@ class Flomo2Notion:
                             logger.debug(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
                             logger.debug(f"🔗 更新: 图片URL: {clean_url}")
                             
-                            # 只添加 Markdown 链接，不创建图片块
-                            content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.debug(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
+                            # 检查URL是否有效
+                            if is_valid_url(clean_url):
+                                content_md += f"![{clean_name}]({clean_url})\n\n"
+                                logger.debug(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
+                            else:
+                                content_md += f"{clean_name}: {clean_url}\n\n"
+                                logger.debug(f"⚠️ 更新: 图片 {i+1} 链接无效，作为文本添加")
                         except Exception as e:
                             logger.error(f"❌ 更新: 图片处理失败: {str(e)}", exc_info=True)
             else:
@@ -358,8 +378,13 @@ class Flomo2Notion:
                             logger.debug(f"📷 更新: 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
                             logger.debug(f"🔗 更新: 混合内容图片URL: {clean_url}")
                             
-                            content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.debug(f"✅ 更新: 混合内容图片 {i+1} Markdown 链接已添加")
+                            # 检查URL是否有效
+                            if is_valid_url(clean_url):
+                                content_md += f"![{clean_name}]({clean_url})\n\n"
+                                logger.debug(f"✅ 更新: 混合内容图片 {i+1} Markdown 链接已添加")
+                            else:
+                                content_md += f"{clean_name}: {clean_url}\n\n"
+                                logger.debug(f"⚠️ 更新: 混合内容图片 {i+1} 链接无效，作为文本添加")
                         except Exception as e:
                             logger.error(f"❌ 更新: 混合内容图片处理失败: {str(e)}", exc_info=True)
         
