@@ -130,7 +130,7 @@ class Flomo2Notion:
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
                             logger.debug(f"📷 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
-                            logger.debug(f"🔗 图片URL: {clean_url[:30]}...")
+                            logger.debug(f"🔗 图片URL: {clean_url}...")
                             
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
@@ -187,14 +187,14 @@ class Flomo2Notion:
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    logger.debug(f"📤 上传内容块 {i+1}/{len(content_chunks)}")
+                    logger.debug(f"📤 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")  # 添加内容预览
                     try:
                         self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
                         logger.debug(f"✅ 内容块 {i+1} 上传成功")
                     except Exception as e:
                         logger.error(f"❌ 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                logger.debug("📤 上传完整内容")
+                logger.debug(f"📤 上传完整内容预览: {content_md[:100]}...")  # 添加内容预览
                 try:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
                     logger.debug("✅ 内容上传成功")
@@ -242,7 +242,7 @@ class Flomo2Notion:
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
                             logger.debug(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
-                            logger.debug(f"🔗 更新: 图片URL: {clean_url[:30]}...")
+                            logger.debug(f"🔗 更新: 图片URL: {clean_url}...")
                             
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
