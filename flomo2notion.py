@@ -150,10 +150,10 @@ class Flomo2Notion:
             content_text = html2text.html2text(memo['content'])
             logger.debug(f"📝 内容长度: {len(content_md)} 字符")
             
-            # 检查是否同时有图片，如果有，添加到内容后面
+            # 不要在Markdown内容中添加图片，而是记录图片信息，稍后单独处理
+            image_files = []
             if memo.get('files') and len(memo['files']) > 0:
                 logger.info(f"📷 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
-                content_md += "\n\n# 附带图片\n\n"
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
                         try:
@@ -163,8 +163,9 @@ class Flomo2Notion:
                             logger.debug(f"📷 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
                             logger.debug(f"🔗 混合内容图片URL: {clean_url}")
                             
-                            content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.debug(f"✅ 混合内容图片 {i+1} Markdown 链接已添加")
+                            # 保存图片信息，不添加到Markdown内容中
+                            image_files.append({"url": clean_url, "name": clean_name})
+                            logger.debug(f"✅ 混合内容图片 {i+1} 信息已保存")
                         except Exception as e:
                             logger.error(f"❌ 混合内容图片处理失败: {str(e)}", exc_info=True)
         
@@ -221,6 +222,26 @@ class Flomo2Notion:
                     logger.debug("✅ 内容上传成功")
                 except Exception as e:
                     logger.error(f"❌ 内容上传失败: {str(e)}", exc_info=True)
+            
+            # 如果有图片，单独添加图片块
+            if 'image_files' in locals() and image_files:
+                logger.info(f"📤 开始添加 {len(image_files)} 个图片块")
+                for i, img in enumerate(image_files):
+                    try:
+                        # 创建图片块
+                        image_block = [{
+                            "image": {
+                                "caption": [],
+                                "type": "external",
+                                "external": {
+                                    "url": img["url"]
+                                }
+                            }
+                        }]
+                        self.notion_helper.client.blocks.children.append(block_id=page['id'], children=image_block)
+                        logger.debug(f"✅ 图片块 {i+1} 添加成功")
+                    except Exception as e:
+                        logger.error(f"❌ 图片块 {i+1} 添加失败: {str(e)}", exc_info=True)
             
             self.success_count += 1
             logger.debug("✅ 记录插入完成")
@@ -302,7 +323,8 @@ class Flomo2Notion:
                             logger.error(f"❌ 更新: 混合内容图片处理失败: {str(e)}", exc_info=True)
         
         # 只更新内容
-        logger.debug(f"上传 Memo，标题为：{truncate_string(content_text)}")
+        notion_title = truncate_string(content_text)
+        logger.debug(f"📝 更新: 标题: {notion_title}")
         properties = {
             "标题": notion_utils.get_title(
                 truncate_string(content_text)
