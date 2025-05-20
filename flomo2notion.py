@@ -117,14 +117,14 @@ class Flomo2Notion:
             return
         
         # 记录结构日志
-        logger.info(f"记录结构: content 是否为 None: {memo['content'] is None}, 是否有图片: {bool(memo.get('files'))}, 图片数量: {len(memo.get('files', []))}")
+        logger.debug(f"记录结构: content 是否为 None: {memo['content'] is None}, 是否有图片: {bool(memo.get('files'))}, 图片数量: {len(memo.get('files', []))}")
         
         # 处理 None 内容
         if memo['content'] is None:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
-                logger.info(f"📷 发现 {len(memo['files'])} 个图片文件")
+                logger.debug(f"📷 发现 {len(memo['files'])} 个图片文件")
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
                         try:
@@ -153,7 +153,7 @@ class Flomo2Notion:
             # 不要在Markdown内容中添加图片，而是记录图片信息，稍后单独处理
             image_files = []
             if memo.get('files') and len(memo['files']) > 0:
-                logger.info(f"📷 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
+                logger.debug(f"📷 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
                         try:
@@ -209,14 +209,14 @@ class Flomo2Notion:
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    logger.info(f"📤 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")
+                    logger.debug(f"📤 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")
                     try:
                         self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
                         logger.debug(f"✅ 内容块 {i+1} 上传成功")
                     except Exception as e:
                         logger.error(f"❌ 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                logger.info(f"📤 上传完整内容预览: {content_md[:100]}...")
+                logger.debug(f"📤 上传完整内容预览: {content_md[:100]}...")
                 try:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
                     logger.debug("✅ 内容上传成功")
@@ -225,7 +225,7 @@ class Flomo2Notion:
             
             # 如果有图片，单独添加图片块
             if 'image_files' in locals() and image_files:
-                logger.info(f"📤 开始添加 {len(image_files)} 个图片块")
+                logger.debug(f"📤 开始添加 {len(image_files)} 个图片块")
                 for i, img in enumerate(image_files):
                     try:
                         # 创建图片块
@@ -261,7 +261,7 @@ class Flomo2Notion:
                     archived=True
                 )
                 self.success_count += 1
-                logger.info(f"✅ 归档记录成功: {memo['slug']}")
+                logger.debug(f"✅ 归档记录成功: {memo['slug']}")
                 return
             except Exception as e:
                 logger.error(f"❌ 归档记录失败: {str(e)}", exc_info=True)
@@ -269,14 +269,14 @@ class Flomo2Notion:
                 raise
         
         # 记录结构日志
-        logger.info(f"更新记录结构: content 是否为 None: {memo['content'] is None}, 是否有图片: {bool(memo.get('files'))}, 图片数量: {len(memo.get('files', []))}")
+        logger.debug(f"更新记录结构: content 是否为 None: {memo['content'] is None}, 是否有图片: {bool(memo.get('files'))}, 图片数量: {len(memo.get('files', []))}")
         
         # 处理 None 内容
         if memo['content'] is None:
             # 如果有文件，将它们作为内容
             if memo.get('files') and len(memo['files']) > 0:
                 content_md = "# 图片备忘录\n\n"
-                logger.info(f"📷 更新: 发现 {len(memo['files'])} 个图片文件")
+                logger.debug(f"📷 更新: 发现 {len(memo['files'])} 个图片文件")
                 
                 # 只添加 Markdown 链接
                 for i, file in enumerate(memo['files']):
@@ -286,12 +286,12 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
-                            logger.info(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
-                            logger.info(f"🔗 更新: 图片URL: {clean_url}")
+                            logger.debug(f"📷 更新: 处理图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.debug(f"🔗 更新: 图片URL: {clean_url}")
                             
                             # 只添加 Markdown 链接，不创建图片块
                             content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.info(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
+                            logger.debug(f"✅ 更新: 图片 {i+1} Markdown 链接已添加")
                         except Exception as e:
                             logger.error(f"❌ 更新: 图片处理失败: {str(e)}", exc_info=True)
             else:
@@ -306,7 +306,7 @@ class Flomo2Notion:
             
             # 检查是否同时有图片，如果有，添加到内容后面
             if memo.get('files') and len(memo['files']) > 0:
-                logger.info(f"📷 更新: 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
+                logger.debug(f"📷 更新: 发现文本+图片混合内容，图片数量: {len(memo['files'])}")
                 content_md += "\n\n# 附带图片\n\n"
                 for i, file in enumerate(memo['files']):
                     if file.get('url'):
@@ -314,11 +314,11 @@ class Flomo2Notion:
                             clean_url = clean_backticks(file['url'])
                             clean_name = clean_backticks(file.get('name', '图片'))
                             
-                            logger.info(f"📷 更新: 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
-                            logger.info(f"🔗 更新: 混合内容图片URL: {clean_url}")
+                            logger.debug(f"📷 更新: 处理混合内容中的图片 {i+1}/{len(memo['files'])}: {clean_name}")
+                            logger.debug(f"🔗 更新: 混合内容图片URL: {clean_url}")
                             
                             content_md += f"![{clean_name}]({clean_url})\n\n"
-                            logger.info(f"✅ 更新: 混合内容图片 {i+1} Markdown 链接已添加")
+                            logger.debug(f"✅ 更新: 混合内容图片 {i+1} Markdown 链接已添加")
                         except Exception as e:
                             logger.error(f"❌ 更新: 混合内容图片处理失败: {str(e)}", exc_info=True)
         
@@ -355,14 +355,14 @@ class Flomo2Notion:
                 
                 # 逐块上传
                 for i, chunk in enumerate(content_chunks):
-                    logger.info(f"📤 更新: 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")
+                    logger.debug(f"📤 更新: 上传内容块 {i+1}/{len(content_chunks)} 预览: {chunk[:100]}...")
                     try:
                         self.uploader.uploadSingleFileContent(self.notion_helper.client, chunk, page['id'])
                         logger.debug(f"✅ 更新: 内容块 {i+1} 上传成功")
                     except Exception as e:
                         logger.error(f"❌ 更新: 内容块 {i+1} 上传失败: {str(e)}", exc_info=True)
             else:
-                logger.info(f"📤 更新: 上传完整内容预览: {content_md[:100]}...")
+                logger.debug(f"📤 更新: 上传完整内容预览: {content_md[:100]}...")
                 try:
                     self.uploader.uploadSingleFileContent(self.notion_helper.client, content_md, page['id'])
                     logger.debug("✅ 更新: 内容上传成功")
@@ -377,8 +377,6 @@ class Flomo2Notion:
             raise
 
     # 具体步骤：
-    # 1. 调用flomo web端的api从flomo获取数据
-    # 2. 轮询flomo的列表数据，调用notion api将数据同步写入到database中的page
     def sync_to_notion(self):
         logger.info("🚀 开始同步 Flomo 到 Notion")
         start_time = time.time()
@@ -392,7 +390,7 @@ class Flomo2Notion:
         memo_list = []
         latest_updated_at = "0"
 
-        logger.info("📥 获取 Flomo 数据...")
+        logger.info("📥 开始获取 Flomo 数据...")
         while True:
             try:
                 new_memo_list = self.flomo_api.get_memo_list(authorization, latest_updated_at)
@@ -414,24 +412,24 @@ class Flomo2Notion:
         logger.info(f"📥 共有 {len(memo_list)} 条记录，其中 {len(deleted_memo_slugs)} 条已删除")
         
         # 2. 调用notion api获取数据库存在的记录，用slug标识唯一，如果存在则更新，不存在则写入
-        logger.info("🔍 查询 Notion 数据库...")
+        logger.debug("🔍 查询 Notion 数据库...")
         try:
             notion_memo_list = self.notion_helper.query_all(self.notion_helper.page_id)
             slug_map = {}
             for notion_memo in notion_memo_list:
                 slug_map[notion_utils.get_rich_text_from_result(notion_memo, "slug")] = notion_memo.get("id")
-            logger.info(f"🔍 Notion 数据库中已有 {len(slug_map)} 条记录")
+            logger.debug(f"🔍 Notion 数据库中已有 {len(slug_map)} 条记录")
         except Exception as e:
             logger.error(f"❌ 查询 Notion 数据库失败: {str(e)}")
             return
 
         # 3. 轮询flomo的列表数据
         total = len(memo_list)
-        logger.info(f"🔄 开始处理 {total} 条 Flomo 记录")
+        logger.debug(f"🔄 开始处理 {total} 条 Flomo 记录")
         
         for i, memo in enumerate(memo_list):
             progress = f"[{i+1}/{total}]"
-            logger.info(f"{progress} 🔍 处理记录 - {memo['slug']}")
+            logger.debug(f"{progress} 🔍 处理记录 - {memo['slug']}")
             # 3.1 判断memo的slug是否存在，不存在则写入
             # 3.2 防止大批量更新，只更新更新时间为制定时间的数据（默认为1天）
             if memo['slug'] in slug_map.keys():
@@ -439,35 +437,35 @@ class Flomo2Notion:
                 full_update = os.getenv("FULL_UPDATE", False)
                 interval_day = os.getenv("UPDATE_INTERVAL_DAY", 1)
                 if not full_update and not is_within_n_days(memo['updated_at'], interval_day):
-                    logger.info(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_day} 天")
+                    logger.debug(f"{progress} ⏭️ 跳过记录 - 更新时间超过 {interval_day} 天")
                     self.skip_count += 1
                     continue
 
                 try:
                     page_id = slug_map[memo['slug']]
-                    logger.info(f"{progress} 🔄 更新记录")
+                    logger.debug(f"{progress} 🔄 更新记录")
                     self.update_memo(memo, page_id)
-                    logger.info(f"{progress} ✅ 更新成功")
+                    logger.debug(f"{progress} ✅ 更新成功")
                 except Exception as e:
                     logger.error(f"{progress} ❌ 更新失败: {str(e)}")
             else:
                 try:
-                    logger.info(f"{progress} 📝 新记录")
+                    logger.debug(f"{progress} 📝 新记录")
                     self.insert_memo(memo)
-                    logger.info(f"{progress} ✅ 插入成功")
+                    logger.debug(f"{progress} ✅ 插入成功")
                 except Exception as e:
                     logger.error(f"{progress} ❌ 插入失败: {str(e)}")
         
         end_time = time.time()
         duration = end_time - start_time
         
-        logger.info("📊 同步统计:")
-        logger.info(f"  - 总记录数: {total}")
-        logger.info(f"  - 成功处理: {self.success_count}")
-        logger.info(f"  - 跳过记录: {self.skip_count}")
-        logger.info(f"  - 失败记录: {self.error_count}")
-        logger.info(f"  - 耗时: {duration:.2f} 秒")
-        logger.info("✅ 同步完成")
+        logger.debug("📊 同步统计:")
+        logger.debug(f"  - 总记录数: {total}")
+        logger.debug(f"  - 成功处理: {self.success_count}")
+        logger.debug(f"  - 跳过记录: {self.skip_count}")
+        logger.debug(f"  - 失败记录: {self.error_count}")
+        logger.debug(f"  - 耗时: {duration:.2f} 秒")
+        logger.debug("✅ 同步完成")
 
 
 if __name__ == "__main__":

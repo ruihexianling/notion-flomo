@@ -2,3 +2,4 @@ scripts/__pycache__/
 .env
 flomo/__pycache__/
 .idea
+./github/workflows/
