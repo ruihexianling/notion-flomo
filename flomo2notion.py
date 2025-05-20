@@ -509,6 +509,17 @@ class Flomo2Notion:
         logger.info("✅ 同步完成")
         
         # 发送 Telegram 通知
+        # 获取北京时间
+        beijing_time = time.localtime(time.time() + 8 * 3600) if time.localtime().tm_gmtoff != 8 * 3600 else time.localtime()
+        
+        # 获取最早和最新的更新时间
+        if memo_list:
+            earliest_memo = min(memo_list, key=lambda x: x['updated_at'])
+            latest_memo = max(memo_list, key=lambda x: x['updated_at'])
+            time_range = f"更新时间范围: {earliest_memo['updated_at']} 至 {latest_memo['updated_at']}"
+        else:
+            time_range = "没有需要更新的记录"
+            
         notification_message = f"""
 <b>Flomo 到 Notion 同步完成</b>
 
@@ -518,8 +529,9 @@ class Flomo2Notion:
   - 跳过记录: {self.skip_count}
   - 失败记录: {self.error_count}
   - 耗时: {duration:.2f} 秒
+  - {time_range}
 
-✅ 同步完成于 {time.strftime('%Y-%m-%d %H:%M:%S')}
+✅ 同步完成于 {time.strftime('%Y-%m-%d %H:%M:%S', beijing_time)}
 """
         send_telegram_notification(notification_message)
 
