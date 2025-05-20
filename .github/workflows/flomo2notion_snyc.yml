@@ -30,6 +30,9 @@ jobs:
       DEBUG: ${{ github.event.inputs.debug || (github.ref == 'refs/heads/debug-branch') }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      ACTOR: ${{ github.actor }}
+      EVENT_NAME: ${{ github.event_name }}
+      WORKFLOW: ${{ github.workflow }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

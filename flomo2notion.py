@@ -427,8 +427,13 @@ class Flomo2Notion:
         beijing_time = time.localtime(time.time() + 8 * 3600) if time.localtime().tm_gmtoff != 8 * 3600 else time.localtime()
         
         # 获取触发者和触发类型信息
-        triggered_by = os.getenv("TRIGGERED_BY", "未知用户")
-        trigger_type = os.getenv("TRIGGER_TYPE", "未知触发类型")
+        triggered_by = os.getenv("ACTOR", "未知用户")
+        trigger_type = os.getenv("EVENT_NAME", "未知触发类型")
+        trigger_repo = os.getenv("REPOSITORY", "未知仓库")
+        trigger_branch = os.getenv("BRANCH", "未知分支")
+        trigger_workflow = os.getenv("GITHUB_WORKFLOW", "未知工作流")
+        trigger_run_id = os.getenv("GITHUB_RUN_ID", "未知运行ID")
+        trigger_run_number = os.getenv("GITHUB_RUN_NUMBER", "未知运行编号")
 
         notification_message = """
 <b>开始同步 Flomo 到 Notion</b>
@@ -436,7 +441,11 @@ class Flomo2Notion:
 ⏰ 开始时间: {}
 👤 触发者: {}
 🔔 触发类型: {}
-""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type)
+📂 仓库: {}
+🌳 分支: {}
+📊 工作流: {}
+🔢 运行ID: {}
+""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type, trigger_repo, trigger_branch, trigger_workflow, trigger_run_id)
         send_telegram_notification(notification_message)
         
         # 1. 调用flomo web端的api从flomo获取数据
