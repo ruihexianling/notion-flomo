@@ -108,8 +108,8 @@ def is_within_n_days(date_str, n_days):
     # 获取当前日期（东八区）
     now = datetime.now(tz_offset)
     
-    # 计算时间差
+    # 计算时间差（使用total_seconds()来获取更精确的时间差）
     delta = now - date
     
-    # 判断是否在n天内
-    return delta.days <= n_days
+    # 判断是否在n天内（转换为秒进行比较）
+    return delta.total_seconds() <= n_days * 24 * 3600

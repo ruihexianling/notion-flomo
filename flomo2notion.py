@@ -30,6 +30,7 @@ if debug:
     logger.setLevel(logging.DEBUG)
     logger.debug("🔍 调试模式已启用")
 else:
+    # logger.setLevel(logging.ERROR)
     # 禁用所有第三方库的日志
     logging.getLogger('notion_client').setLevel(logging.ERROR)  # 提高到 ERROR 级别
     logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)  # 提高到 ERROR 级别
