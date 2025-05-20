@@ -3,6 +3,7 @@ import random
 import time
 import logging
 import sys
+import requests
 
 import html2text
 from markdownify import markdownify
