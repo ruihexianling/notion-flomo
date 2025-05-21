@@ -242,6 +242,7 @@ class Flomo2Notion:
             "更新时间": notion_utils.get_date(memo['updated_at']),
             "来源": notion_utils.get_select(memo['source']),
             "链接数量": notion_utils.get_number(memo['linked_count']),
+            "源链接": notion_utils.get_url(f"https://v.flomoapp.com/mine/?memo_id={memo['slug']}"),
         }
     
         random_cover = random.choice(cover)
