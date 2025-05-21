@@ -14,140 +14,15 @@ from notionify.md2notion import Md2NotionUploader
 from notionify.notion_cover_list import cover
 from notionify.notion_helper import NotionHelper
 from utils import truncate_string, is_within_n_hours
-
-# 配置日志格式
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
+from tools import (
+    split_long_text, clean_backticks, mask_sensitive_info,
+    send_telegram_notification, is_valid_url
 )
-logger = logging.getLogger('flomo2notion')
+from config import logger
 
-# 设置调试模式
-debug = os.getenv('DEBUG', 'false').lower() == 'true'
-if debug:
-    logger.setLevel(logging.DEBUG)
-    logger.debug("🔍 调试模式已启用")
-else:
-    logger.setLevel(logging.ERROR)
-    # 禁用所有第三方库的日志
-    logging.getLogger('notion_client').setLevel(logging.ERROR)  # 提高到 ERROR 级别
-    logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)  # 提高到 ERROR 级别
-    logging.getLogger('urllib3').setLevel(logging.ERROR)  # 禁用 urllib3 日志
-    logging.getLogger('requests').setLevel(logging.ERROR)  # 禁用 requests 日志
-    logging.getLogger('httpx').setLevel(logging.ERROR)  # 禁用 httpx 日志
+# 使用配置模块中的logger
 
-def split_long_text(text, max_length=1900):
-    """
-    将长文本分割成多个小块，每个块不超过指定的最大长度
-    
-    Args:
-        text (str): 要分割的文本
-        max_length (int): 每个块的最大长度，默认为1900（留出一些余量）
-        
-    Returns:
-        list: 分割后的文本块列表
-    """
-    if not text or len(text) <= max_length:
-        return [text]
-        
-    chunks = []
-    current_pos = 0
-    text_length = len(text)
-    
-    while current_pos < text_length:
-        # 如果剩余文本长度小于等于最大长度，直接添加
-        if current_pos + max_length >= text_length:
-            chunks.append(text[current_pos:])
-            break
-            
-        # 尝试在最大长度位置附近找到一个合适的分割点（如句号、换行符等）
-        end_pos = current_pos + max_length
-        
-        # 优先在句号、问号、感叹号、换行符处分割
-        for char in ['\n', '。', '！', '？', '.', '!', '?']:
-            last_char_pos = text.rfind(char, current_pos, end_pos)
-            if last_char_pos != -1 and last_char_pos > current_pos:
-                end_pos = last_char_pos + 1
-                break
-                
-        # 如果没找到合适的分割点，就在最大长度处直接分割
-        chunks.append(text[current_pos:end_pos])
-        current_pos = end_pos
-        
-    return chunks
-
-def clean_backticks(text):
-    """彻底清理字符串中的所有反引号和多余空格"""
-    if not text:
-        return ""
-    # 移除所有反引号和规范化空格
-    return text.replace('`', '').strip()
-
-def mask_sensitive_info(text, mask_length=4):
-    """
-    对敏感信息进行脱敏处理
-    
-    Args:
-        text (str): 需要脱敏的文本
-        mask_length (int): 保留的字符数量
-        
-    Returns:
-        str: 脱敏后的文本
-    """
-    if not text or len(text) <= mask_length:
-        return text
-        
-    # 保留前几个字符，其余用*代替
-    return text[:mask_length] + '*' * (len(text) - mask_length)
-
-def send_telegram_notification(message):
-    """
-    发送 Telegram 通知
-    
-    Args:
-        message (str): 要发送的消息内容
-    """
-    try:
-        # 从环境变量获取 Telegram Bot Token 和 Chat ID
-        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        chat_id = os.getenv("TELEGRAM_CHAT_ID")
-        
-        # 如果未设置 Telegram 相关环境变量，则跳过通知
-        if not bot_token or not chat_id:
-            logger.warning("⚠️ 未设置 Telegram 相关环境变量，跳过通知")
-            return
-            
-        # 构建 API URL
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        
-        # 构建请求数据
-        data = {
-            "chat_id": chat_id,
-            "text": message,
-            "parse_mode": "HTML"  # 支持 HTML 格式
-        }
-        
-        # 发送请求
-        response = requests.post(url, data=data)
-        
-        # 检查响应
-        if response.status_code == 200:
-            logger.info("✅ Telegram 通知发送成功")
-        else:
-            logger.error(f"❌ Telegram 通知发送失败: {response.text}")
-    except Exception as e:
-        logger.error(f"❌ Telegram 通知发送异常: {str(e)}", exc_info=True)
-
-def is_valid_url(url):
-    """检查URL是否有效"""
-    try:
-        response = requests.head(url, allow_redirects=True)
-        return response.status_code == 200
-    except requests.RequestException:
-        return False
+# 这些函数已移至tools.py模块
 
 class Flomo2Notion:
     def __init__(self):

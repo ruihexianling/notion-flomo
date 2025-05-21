@@ -3,3 +3,8 @@ scripts/__pycache__/
 flomo/__pycache__/
 .idea
 ./github/workflows/
+.cursor/mcp.json
+.cursor/rules/规则说明.md
+.cursor/rules/basic.mdc
+.cursor/rules/develop.md
+.cursor/rules/working.md

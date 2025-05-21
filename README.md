@@ -17,3 +17,40 @@ NotesToNotion能同步图片，并且删除和更新的也可以同步
 ## 使用教程
 
 [flomo2notion教程](https://blog.notionedu.com/article/0d91c395-d74a-4ce4-a219-afdca8e90c92#52ef8ad045d84e0c900ecbe529ce3653)
+
+## 项目结构
+
+```
+notion-flomo/
+├── config.py               # 配置模块
+├── flomo/                  # Flomo相关模块
+│   ├── flomo_api.py        # Flomo API封装
+│   └── flomo_sign.py       # Flomo签名生成
+├── flomo2notion.py         # Flomo同步到Notion的主要逻辑
+├── main.py                 # FastAPI服务入口
+├── notion2flomo.py         # Notion同步到Flomo的主要逻辑
+├── notionify/              # Notion相关模块
+│   ├── md2notion.py        # Markdown转Notion
+│   ├── notion_helper.py    # Notion API助手
+│   ├── notion_utils.py     # Notion工具函数
+│   └── notion_cover_list.py# Notion封面列表
+├── requirements.txt        # 项目依赖
+├── tools.py                # 通用工具函数
+└── utils.py                # 实用工具函数
+```
+
+## 启动服务
+
+```bash
+# 安装依赖
+pip install -r requirements.txt
+
+# 启动FastAPI服务
+uvicorn main:app --reload
+```
+
+## API接口
+
+- `GET /`: 首页
+- `GET /sync/flomo2notion`: 触发从Flomo同步到Notion
+- `GET /sync/notion2flomo`: 触发从Notion同步到Flomo
