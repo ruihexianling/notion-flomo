@@ -460,6 +460,7 @@ class Flomo2Notion:
         trigger_workflow = os.getenv("GITHUB_WORKFLOW", "未知工作流")
         trigger_run_id = os.getenv("GITHUB_RUN_ID", "未知运行ID")
         trigger_run_number = os.getenv("GITHUB_RUN_NUMBER", "未知运行编号")
+        trigger_run_url = f"https://github.com/{trigger_repo}/actions/runs/{trigger_run_id}" if trigger_repo else "未知URL"
 
         notification_message = """
 <b>开始同步 Flomo 到 Notion</b>
@@ -472,7 +473,8 @@ class Flomo2Notion:
 📊 工作流: {}
 🔢 运行ID: {}
 🔢 运行编号: {}
-""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type, trigger_repo, trigger_branch, trigger_workflow, trigger_run_id, trigger_run_number)
+🔗 运行URL: {}
+""".format(time.strftime('%Y-%m-%d %H:%M:%S', beijing_time), triggered_by, trigger_type, trigger_repo, trigger_branch, trigger_workflow, trigger_run_id, trigger_run_number, trigger_run_url)
         send_telegram_notification(notification_message)
         
         # 1. 调用flomo web端的api从flomo获取数据
