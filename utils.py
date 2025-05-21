@@ -71,7 +71,7 @@ def str_to_timestamp(date):
 
 def truncate_string(s, length=30):
     # 正则表达式匹配标点符号或换行符
-    pattern = re.compile(r'[，。！？；：,.!?;:\n]')
+    pattern = re.compile(r'[，。！？；：,.!?;\n]')
 
     # 查找第一个匹配的位置
     match = pattern.search(s)
