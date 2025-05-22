@@ -360,21 +360,25 @@ class Flomo2Notion:
             
         memo_list = []
         latest_updated_at = "0"
-        
 
-        # 获取北京时间的7天前
         beijing_timestamp = time.time() + 8 * 3600 if time.localtime().tm_gmtoff != 8 * 3600 else time.time()
-        latest_updated_at = str(int(beijing_timestamp - 7 * 24 * 3600))  # 7天前
+        # 默认只取365天内更新的数据
+        latest_updated_at = str(int(beijing_timestamp - 365 * 24 * 3600)) 
+
         logger.info("📥 开始获取 Flomo 数据...")
         while True:
             try:
-                logger.debug(f"请求参数: latest_updated_at={latest_updated_at}")
+                logger.debug(f"请求参数: latest_updated_at(最早更新时间)={latest_updated_at}")
                 new_memo_list = self.flomo_api.get_memo_list(authorization, latest_updated_at)
                 if not new_memo_list:
                     logger.debug("没有新数据，退出循环")
                     break
                 memo_list.extend(new_memo_list)
-                latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))))
+                # 将更新时间转换为北京时间戳
+                beijing_timestamp = time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))
+                if time.localtime().tm_gmtoff != 8 * 3600:  # 如果不是北京时区
+                    beijing_timestamp += 8 * 3600  # 加上8小时的秒数
+                latest_updated_at = str(int(beijing_timestamp))
                 logger.debug(f"请求成功，最新更新时间: {latest_updated_at}")
                 logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
                 # 按更新时间打印记录信息
