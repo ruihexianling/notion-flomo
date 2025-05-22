@@ -360,7 +360,11 @@ class Flomo2Notion:
             
         memo_list = []
         latest_updated_at = "0"
+        
 
+        # 获取北京时间的7天前
+        beijing_timestamp = time.time() + 8 * 3600 if time.localtime().tm_gmtoff != 8 * 3600 else time.time()
+        latest_updated_at = str(int(beijing_timestamp - 7 * 24 * 3600))  # 7天前
         logger.info("📥 开始获取 Flomo 数据...")
         while True:
             try:
