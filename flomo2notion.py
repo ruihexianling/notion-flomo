@@ -374,12 +374,8 @@ class Flomo2Notion:
                     logger.debug("没有新数据，退出循环")
                     break
                 memo_list.extend(new_memo_list)
-                # 将更新时间转换为北京时间戳
-                beijing_timestamp = time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))
-                if time.localtime().tm_gmtoff != 8 * 3600:  # 如果不是北京时区
-                    beijing_timestamp += 8 * 3600  # 加上8小时的秒数
-                latest_updated_at = str(int(beijing_timestamp))
-                logger.debug(f"请求成功，最新更新时间: {latest_updated_at}")
+                latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))) - 8 * 3600)
+                logger.debug(f"请求成功，最新记录时间: {latest_updated_at}")
                 logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
                 # 按更新时间打印记录信息
                 for memo in sorted(new_memo_list, key=lambda x: x['updated_at']):
