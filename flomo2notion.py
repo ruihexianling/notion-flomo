@@ -361,9 +361,9 @@ class Flomo2Notion:
         memo_list = []
         latest_updated_at = "0"
 
-        beijing_timestamp = time.time() + 8 * 3600 if time.localtime().tm_gmtoff != 8 * 3600 else time.time()
+        # beijing_timestamp = time.time() + 8 * 3600 if time.localtime().tm_gmtoff != 8 * 3600 else time.time()
         # 默认只取365天内更新的数据
-        latest_updated_at = str(int(beijing_timestamp - 365 * 24 * 3600)) 
+        # latest_updated_at = str(int(beijing_timestamp - 365 * 24 * 3600)) 
 
         logger.info("📥 开始获取 Flomo 数据...")
         while True:
