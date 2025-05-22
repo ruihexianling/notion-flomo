@@ -370,6 +370,9 @@ class Flomo2Notion:
                 memo_list.extend(new_memo_list)
                 latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))))
                 logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
+                # 按更新时间打印记录信息
+                for memo in sorted(new_memo_list, key=lambda x: x['updated_at']):
+                    logger.debug(f"📝 记录: {memo['slug']} - 更新时间: {memo['updated_at']}")
             except Exception as e:
                 logger.error(f"❌ 获取 Flomo 数据失败: {str(e)}")
                 return
