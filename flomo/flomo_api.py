@@ -1,11 +1,7 @@
 import time
-
 import requests
-
 from flomo.flomo_sign import getSign
-
-FLOMO_DOMAIN = "https://flomoapp.com"
-MEMO_LIST_URL = FLOMO_DOMAIN + "/api/v1/memo/updated/"
+from config import FLOMO_DOMAIN, MEMO_LIST_URL
 
 HEADERS = {
     'accept': 'application/json, text/plain, */*',
@@ -32,6 +28,7 @@ class FlomoApi:
         current_timestamp = int(time.time())
 
         latest_updated_at = str(int(latest_updated_at) + 1)
+        print(f'get_memo_list latest_updated_at:{latest_updated_at}')
 
         # 构造参数
         params = {
