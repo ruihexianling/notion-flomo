@@ -364,11 +364,14 @@ class Flomo2Notion:
         logger.info("📥 开始获取 Flomo 数据...")
         while True:
             try:
+                logger.debug(f"请求参数: latest_updated_at={latest_updated_at}")
                 new_memo_list = self.flomo_api.get_memo_list(authorization, latest_updated_at)
                 if not new_memo_list:
+                    logger.debug("没有新数据，退出循环")
                     break
                 memo_list.extend(new_memo_list)
                 latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))))
+                logger.debug(f"请求成功，最新更新时间: {latest_updated_at}")
                 logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
                 # 按更新时间打印记录信息
                 for memo in sorted(new_memo_list, key=lambda x: x['updated_at']):
@@ -405,7 +408,7 @@ class Flomo2Notion:
             progress = f"[{i+1}/{total}]"
             logger.debug(f"{progress} 🔍 处理记录 - {memo['slug']}")
             # 3.1 判断memo的slug是否存在，不存在则写入
-            # 3.2 防止大批量更新，只更新更新时间为制定时间的数据（默认为1天）
+            # 3.2 防止大批量更新，只更新更新时间为制定时间的数据（默认为2小时）
             if memo['slug'] in slug_map.keys():
                 # 是否全量更新，默认否
                 full_update = os.getenv("FULL_UPDATE", False)
