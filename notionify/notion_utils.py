@@ -7,6 +7,9 @@ import pendulum
 import requests
 
 from utils import str_to_timestamp
+from config import get_logger
+
+logger = get_logger(__name__)
 
 MAX_LENGTH = (
     1024  # NOTION 2000个字符限制https://developers.notionify.com/reference/request-limits
@@ -211,7 +214,7 @@ def download_image(url, save_dir="cover"):
 
     # 检查文件是否已经存在，如果存在则不进行下载
     if os.path.exists(save_path):
-        print(f"File {file_name} already exists. Skipping download.")
+        logger.info(f"File {file_name} already exists. Skipping download.")
         return save_path
 
     response = requests.get(url, stream=True)
@@ -219,9 +222,9 @@ def download_image(url, save_dir="cover"):
         with open(save_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=128):
                 file.write(chunk)
-        print(f"Image downloaded successfully to {save_path}")
+        logger.info(f"Image downloaded successfully to {save_path}")
     else:
-        print(f"Failed to download image. Status code: {response.status_code}")
+        logger.info(f"Failed to download image. Status code: {response.status_code}")
     return save_path
 
 

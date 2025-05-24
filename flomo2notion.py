@@ -1,7 +1,6 @@
 import os
 import random
 import time
-import logging
 import sys
 import requests
 
@@ -18,11 +17,9 @@ from tools import (
     split_long_text, clean_backticks, mask_sensitive_info,
     send_telegram_notification, is_valid_url
 )
-from config import logger
+from config import get_logger
 
-# 使用配置模块中的logger
-
-# 这些函数已移至tools.py模块
+logger = get_logger(__name__)
 
 class Flomo2Notion:
     def __init__(self):
@@ -37,6 +34,8 @@ class Flomo2Notion:
         # 检查记录是否已删除
         if memo.get('deleted_at') is not None:
             self.skip_count += 1
+            logger.info(f"🗑️ 跳过已删除的记录")
+            logger.debug(f"{memo['slug']}")
             return
         
         # 记录结构日志
@@ -367,16 +366,13 @@ class Flomo2Notion:
                 logger.debug(f"请求参数: latest_updated_at(最早更新时间)={latest_updated_at}")
                 new_memo_list = self.flomo_api.get_memo_list(authorization, latest_updated_at)
                 if not new_memo_list:
-                    logger.debug("没有新数据，退出循环")
+                    logger.debug("📥 已获取所有记录")
                     break
                 memo_list.extend(new_memo_list)
                
                 latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))) - 8 * 3600)
                 logger.debug(f"请求成功，最新记录时间: {latest_updated_at}")
                 logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
-                # 按更新时间打印记录信息
-                for memo in sorted(new_memo_list, key=lambda x: x['updated_at']):
-                    logger.debug(f"📝 记录: {memo['slug']} - 更新时间: {memo['updated_at']}")
             except Exception as e:
                 logger.error(f"❌ 获取 Flomo 数据失败: {str(e)}")
                 return
@@ -445,6 +441,11 @@ class Flomo2Notion:
                     logger.error(f"{progress} ❌ 更新失败: {str(e)}")
             else:
                 try:
+                    # 判断memo是否已删除
+                    if memo['slug'] in deleted_memo_slugs:
+                        logger.info(f"{progress} ⏭️ 跳过记录 - 已删除")
+                        self.skip_count += 1
+                        continue
                     logger.info(f"{progress} 📝 新记录")
                     self.insert_memo(memo)
                     logger.info(f"{progress} ✅ 插入成功")
