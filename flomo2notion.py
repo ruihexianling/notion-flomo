@@ -445,6 +445,11 @@ class Flomo2Notion:
                     logger.error(f"{progress} ❌ 更新失败: {str(e)}")
             else:
                 try:
+                    # 判断memo是否已删除
+                    if memo['slug'] in deleted_memo_slugs:
+                        logger.info(f"{progress} ⏭️ 跳过记录 - 已删除")
+                        self.skip_count += 1
+                        continue
                     logger.info(f"{progress} 📝 新记录")
                     self.insert_memo(memo)
                     logger.info(f"{progress} ✅ 插入成功")
