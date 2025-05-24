@@ -2,6 +2,9 @@ import time
 import requests
 from flomo.flomo_sign import getSign
 from config import FLOMO_DOMAIN, MEMO_LIST_URL
+from config import logger
+
+logger = logging.getLogger(__name__)
 
 HEADERS = {
     'accept': 'application/json, text/plain, */*',
