@@ -37,6 +37,8 @@ class Flomo2Notion:
         # 检查记录是否已删除
         if memo.get('deleted_at') is not None:
             self.skip_count += 1
+            logger.info(f"🗑️ 跳过已删除的记录")
+            logger.debug(f"{memo['slug']}")
             return
         
         # 记录结构日志
