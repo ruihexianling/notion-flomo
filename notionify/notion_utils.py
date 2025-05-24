@@ -9,7 +9,7 @@ import requests
 from utils import str_to_timestamp
 from config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 MAX_LENGTH = (
     1024  # NOTION 2000个字符限制https://developers.notionify.com/reference/request-limits

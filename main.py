@@ -4,8 +4,8 @@ from notion2flomo import Notion2Flomo
 import logging
 import os
 from config import get_logger
+logger = get_logger(__name__)
 
-logger = logging.getLogger(__name__)
 
 app = FastAPI()
 

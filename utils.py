@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 
 import pendulum
 
-
 def format_time(time):
     """将秒格式化为 xx时xx分格式"""
     result = ""

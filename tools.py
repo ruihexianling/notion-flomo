@@ -1,5 +1,6 @@
 import requests
-from config import logger, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from config import get_logger, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+logger = get_logger(__name__)
 
 def split_long_text(text, max_length=1900):
     """

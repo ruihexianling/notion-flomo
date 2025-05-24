@@ -4,7 +4,7 @@ from flomo.flomo_sign import getSign
 from config import FLOMO_DOMAIN, MEMO_LIST_URL
 from config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 HEADERS = {
     'accept': 'application/json, text/plain, */*',

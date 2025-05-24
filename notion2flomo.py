@@ -10,7 +10,7 @@ from notionify.notion_helper import NotionHelper
 from tools import send_telegram_notification
 from config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class Notion2Flomo:
     """Notion到Flomo同步类"""

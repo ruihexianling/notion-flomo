@@ -1,7 +1,6 @@
 import os
 import random
 import time
-import logging
 import sys
 import requests
 
@@ -20,7 +19,7 @@ from tools import (
 )
 from config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class Flomo2Notion:
     def __init__(self):
