@@ -347,7 +347,7 @@ class Md2NotionUploader:
             notion_blocks = read_file_content(content)
             for i,content in enumerate(notion_blocks):
                 if i < start_line:continue
-                logger.info(f"uploading line {i},............\n", end = '')
+                logger.info(f"uploading line {i},.............")
                 # q:'uploader' is not defined in the function?  a: uploader is the instance of the class
                 self.uploadBlock(content, notion, page_id)
                 logger.info('done!')
