@@ -35,5 +35,20 @@ def setup_logging():
     # 返回主日志记录器
     return logging.getLogger('flomo2notion')
 
+
+def get_logger(name):
+    """
+    获取指定名称的日志器，确保日志系统已初始化
+
+    Args:
+        name: 日志器名称
+
+    Returns:
+        Logger: 配置好的日志器
+    """
+    # 确保日志系统已初始化
+    setup_logging()
+    return logging.getLogger(name)
+
 # 创建默认日志记录器
 logger = setup_logging() 

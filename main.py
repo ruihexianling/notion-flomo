@@ -3,10 +3,9 @@ from flomo2notion import Flomo2Notion
 from notion2flomo import Notion2Flomo
 import logging
 import os
-from config import setup_logging
+from config import get_logger
 
-# 配置日志
-logger = setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 

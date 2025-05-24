@@ -7,7 +7,7 @@ import pendulum
 import requests
 
 from utils import str_to_timestamp
-from config import logger
+from config import get_logger
 
 logger = logging.getLogger(__name__)
 

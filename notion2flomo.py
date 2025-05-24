@@ -8,7 +8,9 @@ from flomo.flomo_api import FlomoApi
 from notionify import notion_utils
 from notionify.notion_helper import NotionHelper
 from tools import send_telegram_notification
-from config import logger
+from config import get_logger
+
+logger = logging.getLogger(__name__)
 
 class Notion2Flomo:
     """Notion到Flomo同步类"""

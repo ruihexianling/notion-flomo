@@ -2,7 +2,7 @@ import re, os
 from dotenv import load_dotenv
 from notion_client import Client
 from notionify.Parser.md2block import read_file, read_file_content
-from config import logger
+from config import get_logger
 
 logger = logging.getLogger(__name__)
 

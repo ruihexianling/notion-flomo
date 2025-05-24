@@ -18,7 +18,7 @@ from tools import (
     split_long_text, clean_backticks, mask_sensitive_info,
     send_telegram_notification, is_valid_url
 )
-from config import logger
+from config import get_logger
 
 logger = logging.getLogger(__name__)
 

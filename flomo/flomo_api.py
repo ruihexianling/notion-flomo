@@ -2,7 +2,7 @@ import time
 import requests
 from flomo.flomo_sign import getSign
 from config import FLOMO_DOMAIN, MEMO_LIST_URL
-from config import logger
+from config import get_logger
 
 logger = logging.getLogger(__name__)
 
