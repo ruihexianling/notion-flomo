@@ -20,9 +20,7 @@ from tools import (
 )
 from config import logger
 
-# 使用配置模块中的logger
-
-# 这些函数已移至tools.py模块
+logger = logging.getLogger(__name__)
 
 class Flomo2Notion:
     def __init__(self):
@@ -369,16 +367,13 @@ class Flomo2Notion:
                 logger.debug(f"请求参数: latest_updated_at(最早更新时间)={latest_updated_at}")
                 new_memo_list = self.flomo_api.get_memo_list(authorization, latest_updated_at)
                 if not new_memo_list:
-                    logger.debug("没有新数据，退出循环")
+                    logger.debug("📥 已获取所有记录")
                     break
                 memo_list.extend(new_memo_list)
                
                 latest_updated_at = str(int(time.mktime(time.strptime(new_memo_list[-1]['updated_at'], "%Y-%m-%d %H:%M:%S"))) - 8 * 3600)
                 logger.debug(f"请求成功，最新记录时间: {latest_updated_at}")
                 logger.debug(f"📥 已获取 {len(memo_list)} 条记录")
-                # 按更新时间打印记录信息
-                for memo in sorted(new_memo_list, key=lambda x: x['updated_at']):
-                    logger.debug(f"📝 记录: {memo['slug']} - 更新时间: {memo['updated_at']}")
             except Exception as e:
                 logger.error(f"❌ 获取 Flomo 数据失败: {str(e)}")
                 return
