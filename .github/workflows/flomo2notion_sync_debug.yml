@@ -26,7 +26,7 @@ jobs:
       FLOMO_TOKEN: ${{ secrets.FLOMO_TOKEN }}
       REF: ${{ github.ref }}
       REPOSITORY: ${{ github.repository }}
-      DEBUG: ${{ github.event.inputs.debug == 'true' || github.ref == 'refs/heads/debug-branch' || github.repository == 'ruihexianling/Nomo' }}
+      DEBUG: ${{ github.event.inputs.debug == 'true' || github.ref == 'refs/heads/debug-branch' || secrets.DEBUG == 'true' }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       ACTOR: ${{ github.actor }}

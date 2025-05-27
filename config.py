@@ -36,14 +36,21 @@ def setup_logging():
     )
     
     # 设置第三方库的日志级别
+    logging.getLogger('httpx').setLevel(logging.ERROR)
     if not DEBUG:
         logging.getLogger('notion_client').setLevel(logging.ERROR)
         logging.getLogger('notion_client.api_endpoints').setLevel(logging.ERROR)
         logging.getLogger('urllib3').setLevel(logging.ERROR)
         logging.getLogger('requests').setLevel(logging.ERROR)
-        logging.getLogger('httpx').setLevel(logging.ERROR)
         logging.getLogger('asyncio').setLevel(logging.ERROR)
         logging.getLogger('httpcore').setLevel(logging.ERROR)
+    else:
+        logging.getLogger('notion_client').setLevel(logging.INFO)
+        logging.getLogger('notion_client.api_endpoints').setLevel(logging.INFO)
+        logging.getLogger('urllib3').setLevel(logging.INFO)
+        logging.getLogger('requests').setLevel(logging.INFO)
+        logging.getLogger('asyncio').setLevel(logging.INFO)
+        logging.getLogger('httpcore').setLevel(logging.INFO)
     
     # 返回主日志记录器
     return logging.getLogger('__name__')
