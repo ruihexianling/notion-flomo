@@ -1,0 +1,57 @@
+name: flomo2notion sync debug
+
+on:
+  workflow_dispatch:       # ✅ 手动触发
+    inputs:
+      debug:
+        description: '开启调试模式'
+        required: false
+        default: 'true'
+  # schedule:                # ✅ 定时触发（每半小时）
+  #   - cron: '*/30 * * * *'
+  push:                    # ✅ 每次 push 到 main 分支
+    branches:
+      - main
+      - debug-branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sync:
+    name: Sync
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_PAGE: ${{ secrets.NOTION_PAGE }}
+      FLOMO_TOKEN: ${{ secrets.FLOMO_TOKEN }}
+      REF: ${{ github.ref }}
+      REPOSITORY: ${{ github.repository }}
+      DEBUG: ${{ github.event.inputs.debug == 'true' || github.ref == 'refs/heads/debug-branch' || github.repository == 'ruihexianling/Nomo' }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      ACTOR: ${{ github.actor }}
+      EVENT_NAME: ${{ github.event_name }}
+      WORKFLOW: ${{ github.workflow }}
+      BRANCH: ${{ github.ref }}
+      SHA: ${{ github.sha }}
+      RUN_NUMBER: ${{ github.run_number }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: flomo2notion sync
+        run: |
+          if [ "$DEBUG" = "true" ]; then
+              echo "开启调试模式，打印详细日志"
+            else
+              echo "正常模式，简洁日志"
+            fi
+          python -u flomo2notion.py

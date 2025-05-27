@@ -1,4 +1,79 @@
-scripts/__pycache__/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.Python
+build/
+dist/
+
+# Distribution / packaging
+.eggs/
+*.egg
+*.whl
+
+# C extensions
+*.so
+
+# Installer logs
+*.log
+*.ini
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+.tox/
+.mypy_cache/
+htmlcov/
+.nox/
+
+# Editors
+.vscode/  # Visual Studio Code
+.idea/    # IntelliJ IDEA / PyCharm
+.idea/*
+*.sublime-project
+*.sublime-workspace
+.project
+.DS_Store # macOS specific
+ehthumbs.db # Windows specific
+Thumbs.db # Windows specific
+.cursor/*
+
+# Virtual environment
+.venv/
+venv/
+env/
+/bin/python  # 如果虚拟环境在项目根目录，可以更具体地忽略
+pip-wheel-metadata/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb  # 如果你不想提交任何 Jupyter Notebook 文件，可以取消注释
+!my_notebook.ipynb # 如果你只想提交特定的 Jupyter Notebook 文件
+
+# Blackfire
+.blackfire.ini
+
+# PyInstaller
+*.spec
+build/
+dist/
+
+# Documentation
+docs/_build/
+
+# Database files
+*.sqlite3
+*.db
+*.db-journal
+
+# Environment variables
 .env
-flomo/__pycache__/
-.idea
+.flaskenv
+
+# Miscellaneous
+*.bak
+*.swp
+*~
+._* # macOS specific hidden files

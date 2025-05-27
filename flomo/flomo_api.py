@@ -1,11 +1,10 @@
 import time
-
 import requests
-
 from flomo.flomo_sign import getSign
+from config import FLOMO_DOMAIN, MEMO_LIST_URL
+from config import get_logger
 
-FLOMO_DOMAIN = "https://flomoapp.com"
-MEMO_LIST_URL = FLOMO_DOMAIN + "/api/v1/memo/updated/"
+logger = get_logger(__name__)
 
 HEADERS = {
     'accept': 'application/json, text/plain, */*',
@@ -32,6 +31,7 @@ class FlomoApi:
         current_timestamp = int(time.time())
 
         latest_updated_at = str(int(latest_updated_at) + 1)
+        logger.debug(f'get_memo_list latest_updated_at:{latest_updated_at}')
 
         # 构造参数
         params = {
@@ -53,12 +53,12 @@ class FlomoApi:
 
         if response.status_code != 200:
             # 网络或者服务器错误
-            print('get_memo_list http error:' + response.text)
+            logger.error('get_memo_list http error:' + response.text)
             return
 
         response_json = response.json()
         if response_json['code'] != 0:
-            print("get_memo_list business error:" + response_json['message'])
+            logger.error("get_memo_list business error:" + response_json['message'])
             return
 
         return response_json['data']

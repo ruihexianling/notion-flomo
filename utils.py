@@ -1,10 +1,8 @@
 import calendar
 import re
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import pendulum
-
 
 def format_time(time):
     """将秒格式化为 xx时xx分格式"""
@@ -72,7 +70,7 @@ def str_to_timestamp(date):
 
 def truncate_string(s, length=30):
     # 正则表达式匹配标点符号或换行符
-    pattern = re.compile(r'[，。！？；：,.!?;:\n]')
+    pattern = re.compile(r'[，。！？；：,.!?;\n]')
 
     # 查找第一个匹配的位置
     match = pattern.search(s)
@@ -87,15 +85,30 @@ def truncate_string(s, length=30):
     return s[:end_pos]
 
 
-def is_within_n_days(target_date_str, n):
-    # 将目标日期字符串转换为 datetime 对象
-    target_date = datetime.strptime(target_date_str, '%Y-%m-%d %H:%M:%S')
-
-    # 获取当前时间
-    now = datetime.now()
-
-    # 计算 n 天前的时间
-    n_days_ago = now - timedelta(days=n)
-
-    # 判断目标日期是否在 n 天内
-    return n_days_ago <= target_date <= now
+def is_within_n_hours(date_str, n_hours):
+    """
+    判断给定日期是否在当前日期的n小时内
+    
+    Args:
+        date_str (str): 日期字符串，格式为 "YYYY-MM-DD HH:MM:SS"，东八区时间
+        n_hours (int): 小时数
+        
+    Returns:
+        bool: 如果在n小时内，返回True，否则返回False
+    """    
+    
+    # 解析日期字符串（假设是东八区时间）
+    date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+    
+    # 将日期转换为带时区的日期（东八区，UTC+8）
+    tz_offset = timezone(timedelta(hours=8))
+    date = date.replace(tzinfo=tz_offset)
+    
+    # 获取当前日期（东八区）
+    now = datetime.now(tz_offset)
+    
+    # 计算时间差（使用total_seconds()来获取更精确的时间差）
+    delta = now - date
+    
+    # 判断是否在n天内（转换为秒进行比较）
+    return delta.total_seconds() <= n_hours * 3600
