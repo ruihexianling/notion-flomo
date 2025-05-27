@@ -2,7 +2,9 @@ import re, os
 from dotenv import load_dotenv
 from notion_client import Client
 from notionify.Parser.md2block import read_file, read_file_content
+from config import get_logger
 
+logger = get_logger(__name__)
 
 class Md2NotionUploader:
     image_host_object = None
@@ -239,7 +241,7 @@ class Md2NotionUploader:
     def convert_to_raw_cell(self, line):
         children = {"table_row": {"cells": []}}
         for content in line:
-            # print(uploader.blockparser(content,'text'))
+            # logger.info(uploader.blockparser(content,'text'))
             cell_json = self.sentence_parser(content)
             children["table_row"]["cells"].append(cell_json)
         return children
@@ -269,7 +271,8 @@ class Md2NotionUploader:
         url = _dict['source']
         url = self.convert_to_oneline_url(url)
         assert url is not None
-        return [{"image": {"caption": [], "type": "external",
+        # 移除type字段，让Notion API自动处理
+        return [{"image": {"caption": [],
                            "external": {"url": url}
                            }
                  }]
@@ -333,11 +336,11 @@ class Md2NotionUploader:
             notion_blocks = read_file(filepath)
             for i,content in enumerate(notion_blocks):
                 if i < start_line:continue
-                print(f"uploading line {i},............", end = '')
+                logger.info(f"uploading line {i},............\n", end = '')
                 self.uploadBlock(content, notion, page_id)
-                print('done!')
+                logger.info('done!')
         else:
-            print(f"file {filepath} not found")
+            logger.info(f"file {filepath} not found")
 
     def uploadSingleFileContent(self, notion, content, page_id="", start_line = 0):
         if content is not None:
@@ -345,12 +348,12 @@ class Md2NotionUploader:
             notion_blocks = read_file_content(content)
             for i,content in enumerate(notion_blocks):
                 if i < start_line:continue
-                print(f"uploading line {i},............", end = '')
+                logger.info(f"uploading line {i},.............")
                 # q:'uploader' is not defined in the function?  a: uploader is the instance of the class
                 self.uploadBlock(content, notion, page_id)
-                print('done!')
+                logger.info('done!')
         else:
-            print(f"content is None")
+            logger.info(f"content is None")
 
 
 if __name__ == '__main__':
