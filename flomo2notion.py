@@ -185,7 +185,7 @@ class Flomo2Notion:
         logger.info(f"🔄 开始处理 {total} 条 Flomo 记录")
         
         # 获取更新间隔（小时）
-        interval_hour = int(os.getenv("UPDATE_INTERVAL_HOUR", 2))  # 默认2小时
+        interval_hour = int(os.getenv("UPDATE_INTERVAL_HOUR", 3))  # 默认3小时
         
         # 获取在更新时间范围内的记录的最早和最新时间
         updated_memos = [memo for memo in memo_list if is_within_n_hours(memo['updated_at'], interval_hour)]
